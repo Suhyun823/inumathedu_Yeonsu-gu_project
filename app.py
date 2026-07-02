@@ -2,36 +2,36 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# 1. 페이지 설정 및 제목
-st.set_page_config(page_title="ECG & Fourier Series", layout="wide")
-st.title("🔬 Lab Murder Case: ECG Inverse Problem & Fourier Approximation")
-st.markdown("### Biomedical-Mathematics Convergence Program (Session 1)")
-st.write("Adjust the number of terms ($n$) to see how smooth trigonometric functions algebraically synthesize the sharp QRS complex.")
+# 1. 페이지 설정 및 제목 (한글 변경)
+st.set_page_config(page_title="심전도와 푸리에 급수 시각화", layout="wide")
+st.title("🔬 연구실 살인사건: 심전도 역문제와 푸리에 근사 이론")
+st.markdown("### 의생명·수학 융합 교육 프로그램 (1교시 시각화 검증)")
+st.write("삼각함수의 항($n$)을 늘려가며 매끄러운 곡선들이 어떻게 뾰족한 QRS파를 대수적으로 합성하는지 확인해봅시다.")
 
-# 사이드바: 인터랙티브 컨트롤러
-st.sidebar.header("⚙️ Fourier Series Parameters")
-n_terms = st.sidebar.slider("Number of terms (n)", min_value=1, max_value=50, value=5, step=1)
-signal_type = st.sidebar.radio("Select Signal Type", ["Virtual ECG Waveform", "Ideal Square Wave (Max Gibbs)"])
+# 사이드바: 인터랙티브 컨트롤러 (한글 변경)
+st.sidebar.header("⚙️ 푸리에 급수 제어 매개변수")
+n_terms = st.sidebar.slider("푸리에 급수의 항의 개수 (n)", min_value=1, max_value=50, value=5, step=1)
+signal_type = st.sidebar.radio("신호 형태 선택", ["가상 심전도 파형(첨점 포함)", "이상적인 사각파(Gibbs 현상 극대화)"])
 
 # 2. 수학적 배경 데이터 및 함수 정의
 x = np.linspace(-np.pi, np.pi, 1000)
 
 def generate_target_signal(x, type):
-    """Generates the target signal to approximate."""
-    if type == "Virtual ECG Waveform":
+    """학생들이 근사할 목표 신호(가상 ECG 혹은 사각파)를 생성합니다."""
+    if type == "가상 심전도 파형(첨점 포함)":
         y = np.zeros_like(x)
         y[abs(x) < 0.2] = 1.0 - abs(x[abs(x) < 0.2]) / 0.2
-        y += 0.1 * np.exp(-((x - 1.0)/0.3)**2)  # T wave
-        y += 0.05 * np.exp(-((x + 1.0)/0.2)**2) # P wave
+        y += 0.1 * np.exp(-((x - 1.0)/0.3)**2)  # T파 표현
+        y += 0.05 * np.exp(-((x + 1.0)/0.2)**2) # P파 표현
         return y
     else:
         return np.sign(np.sin(x))
 
 def fourier_approximation(x, n, type):
-    """Calculates the Fourier series approximation."""
+    """n개의 항을 활용한 푸리에 급수 전개 식을 계산합니다."""
     f_approx = np.zeros_like(x)
     
-    if type == "Virtual ECG Waveform":
+    if type == "가상 심전도 파형(첨점 포함)":
         target = generate_target_signal(x, type)
         a0 = np.mean(target)
         f_approx += a0
@@ -54,9 +54,10 @@ error = y_target - y_approx
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.subheader("📊 Graphical Visualization")
+    st.subheader("📊 그래프 시각화 분석")
     fig, ax = plt.subplots(figsize=(10, 5))
-    # 한글 깨짐을 방지하기 위해 범례(label)를 영어로 수정했습니다.
+    
+    # ★한글 깨짐을 막기 위해 그래프 내부의 label(범례)과 Title은 영문으로 유지합니다!
     ax.plot(x, y_target, label="Original Signal", color="black", linestyle="--", alpha=0.7)
     ax.plot(x, y_approx, label=f"Fourier Sum (n={n_terms})", color="red", linewidth=2)
     ax.set_title(f"Fourier Series Approximation (n={n_terms})", fontsize=14)
@@ -65,34 +66,36 @@ with col1:
     st.pyplot(fig)
 
 with col2:
-    st.subheader("💡 Mathematical Observation Note")
+    st.subheader("💡 수리해석학적 관찰 노트")
     
+    # 동적 피드백 (한글 변경)
     if n_terms < 5:
-        st.warning("⚠️ **n is too low:** The sharp QRS complex cannot be represented well and looks blurred as a smooth curve.")
+        st.warning("⚠️ 현재 **n이 너무 낮아** 뾰족한 순간변화율(QRS파)을 완벽히 표현하지 못하고 부드러운 곡선 형태로 뭉개집니다.")
     elif n_terms >= 30:
-        st.success("✨ **High-frequency components accumulated:** The sharp peak close to the original signal is successfully synthesized!")
+        st.success("✨ **고주파 성분($n \\ge 30$)이 누적**되면서 급격히 꺾이는 첨점이 원본과 유사하게 합성되었습니다!")
     else:
-        st.info("🔄 Intermediate frequencies are causing constructive/destructive interference to converge.")
+        st.info("🔄 중간 빈도의 파동들이 상쇄·보강 간섭을 일으키며 점차 수렴해가는 과정입니다.")
         
     st.markdown("---")
     max_error = np.max(np.abs(error))
-    st.metric(label="🎯 Max Absolute Error", value=f"{max_error:.4f}")
+    st.metric(label="🎯 현재 설정된 n에서의 최대 절대 오차(Max Error)", value=f"{max_error:.4f}")
     
     st.markdown("""
-    **📝 Student Mission**
-    1. Slowly increase the slider `n` from **1 to 50**.
-    2. Observe the **'Gibbs Phenomenon'** (the persistent oscillation near the sharp peak).
-    3. Discuss the practical value of being **'close enough'** in engineering versus 'exactly equal' in pure math.
+    **📝 학생 안내 미션**
+    1. 슬라이더의 `n`을 **1에서 50까지** 천천히 늘려보세요.
+    2. 뾰족하게 꺾이는 부분 주변에서 사라지지 않는 작은 진동인 **'깁스 현상(Gibbs Phenomenon)'**을 관찰해보세요.
+    3. 수학에서 '완전히 같다'는 것보다, 실용적인 공학에서 **'필요한 만큼 가까워지는 것'**의 가치를 토론해봅시다.
     """)
 
-# 4. 하단부 오차 그래프 추가 공유
+# 4. 하단부 오차 그래프 추가 공유 (한글 변경)
 st.markdown("---")
-st.subheader("📉 Error Trend (Original - Approximation)")
+st.subheader("📉 원래 함수와의 오차(Error) 추이 분석")
 fig_err, ax_err = plt.subplots(figsize=(12, 2.5))
+# 여기도 오차 그래프 내부 범례는 영문으로 유지합니다.
 ax_err.plot(x, error, color="purple", label="Error")
 ax_err.fill_between(x, error, color="purple", alpha=0.1)
 ax_err.grid(True, linestyle=":")
 ax_err.legend()
 st.pyplot(fig_err)
 
-st.caption("This tool was developed as part of the Incheon National University Mathematics Education convergence program.")
+st.caption("[2026 대함성 프로젝트] 본 시각화 도구는 인천대학교 수학교육과 '연구실 살인사건: 심전도 역문제와 과학수사' 융합 교육 프로그램의 일환으로 제작되었습니다.")
